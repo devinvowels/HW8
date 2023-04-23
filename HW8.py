@@ -87,8 +87,6 @@ def plot_rest_categories(db):
     for k, v in count_dct.items():
         category_counts[categories_lst[row][1]] = v
         row += 1
-    
-    print(category_counts)
 
 
     #VISUALIZATION
@@ -114,8 +112,11 @@ def plot_rest_categories(db):
     plt.xlabel("Number of Restaurants")
     plt.title("Types of Restaurants on South University Ave")
     
+
+
     fig.savefig("Restaurant_Types.png")
     plt.show()
+    return category_counts
 
 
 def find_rest_in_building(building_num, db):
@@ -124,7 +125,41 @@ def find_rest_in_building(building_num, db):
     restaurant names. You need to find all the restaurant names which are in the specific building. The restaurants 
     should be sorted by their rating from highest to lowest.
     '''
-    pass
+    dir = os.path.dirname(__file__) + os.sep
+    conn = sqlite3.connect(dir + db)
+    cur = conn.cursor()
+
+    #Getting building info
+    cur.execute('SELECT * FROM buildings')
+    buildings_dct = {}
+    for row in cur:
+        buildings_dct[row[0]] = row[1]    
+
+    #Getting restaurant info
+    cur.execute('SELECT * FROM restaurants')
+    restaurants_lst = []
+    for row in cur:
+        restaurants_lst.append(row)
+    
+    #Getting building number id
+    key_list=list(buildings_dct.keys())
+    val_list=list(buildings_dct.values())
+    ind=val_list.index(building_num)
+    building_type = key_list[ind]
+
+    building_dct = {}
+    for r in restaurants_lst:
+        if building_type == r[3]:
+            building_dct[r[1]] = r[4]
+
+    #sorting categories in descending order
+    sort_restaurants_dct = sorted(building_dct.items(), key=lambda x: x[1], reverse=True)
+
+    final_lst = []
+    for x in sort_restaurants_dct:
+        final_lst.append(x[0])
+    
+    return final_lst
 
 #EXTRA CREDIT
 def get_highest_rating(db): #Do this through DB as well
@@ -144,6 +179,7 @@ def get_highest_rating(db): #Do this through DB as well
 def main():
     load_rest_data("South_U_Restaurants.db")
     plot_rest_categories("South_U_Restaurants.db")
+    find_rest_in_building(1140, "South_U_Restaurants.db")
 
 '''class TestHW8(unittest.TestCase):
     def setUp(self):
