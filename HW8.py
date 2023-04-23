@@ -55,7 +55,68 @@ def plot_rest_categories(db):
     restaurant categories and the values should be the number of restaurants in each category. The function should
     also create a bar chart with restaurant categories and the count of number of restaurants in each category.
     """
-    pass
+    dir = os.path.dirname(__file__) + os.sep
+    conn = sqlite3.connect(dir + db)
+    cur = conn.cursor()
+
+    #Getting restaurant category info
+    cur.execute('SELECT * FROM categories')
+    categories_lst = []
+    for row in cur:
+        categories_lst.append(row)
+    
+    #Getting restaurant info
+    cur.execute('SELECT * FROM restaurants')
+    restaurants_lst = []
+    for row in cur:
+        restaurants_lst.append(row)    
+    
+    #Counting categories
+    count_dct = {}
+    for i in range(1, len(categories_lst) + 1):
+        count_dct[i] = 0
+    
+    for c in restaurants_lst:
+        for k,v in count_dct.items():
+            if c[2] == k:
+                count_dct.update({k: (v + 1)})
+    
+    #Replacing category IDs with names
+    category_counts = {}
+    row = 0
+    for k, v in count_dct.items():
+        category_counts[categories_lst[row][1]] = v
+        row += 1
+    
+    print(category_counts)
+
+
+    #VISUALIZATION
+    fig = plt.figure()
+    
+    #sorting categories in descending order
+    sort = sorted(category_counts.items(), key=lambda x: x[1], reverse=True)
+    sorted_category_counts = {}
+    for x in sort:
+        sorted_category_counts.update({x[0]: x[1]})
+    
+    #creating x and y axis
+    restaurant_categories = []
+    counts = []
+    for k,v in sorted_category_counts.items():
+        restaurant_categories.append(k)
+        counts.append(v)
+
+    #plotting
+    plt.barh(restaurant_categories, counts)
+    
+    plt.ylabel("Restaurant Categories")
+    plt.xlabel("Number of Restaurants")
+    plt.title("Types of Restaurants on South University Ave")
+    
+    fig.savefig("Restaurant_Types.png")
+    plt.show()
+
 
 def find_rest_in_building(building_num, db):
     '''
@@ -82,6 +143,7 @@ def get_highest_rating(db): #Do this through DB as well
 #Try calling your functions here
 def main():
     load_rest_data("South_U_Restaurants.db")
+    plot_rest_categories("South_U_Restaurants.db")
 
 '''class TestHW8(unittest.TestCase):
     def setUp(self):
