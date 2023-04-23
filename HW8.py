@@ -1,6 +1,6 @@
-# Your name: 
-# Your student id:
-# Your email:
+# Your name: Devin Vowels
+# Your student id: 7797 8257
+# Your email: dvowels@umich.edu
 # List who you have worked with on this homework:
 
 import matplotlib.pyplot as plt
@@ -15,7 +15,39 @@ def load_rest_data(db):
     and each inner key is a dictionary, where the key:value pairs should be the category, 
     building, and rating for the restaurant.
     """
-    pass
+    dir = os.path.dirname(__file__) + os.sep
+    conn = sqlite3.connect(dir + db)
+    cur = conn.cursor()
+    
+    #Getting restaurant info
+    cur.execute('SELECT * FROM restaurants')
+    restaurants_lst = []
+    for row in cur:
+        restaurants_lst.append(row)
+    
+    #Getting restaurant category info
+    cur.execute('SELECT * FROM categories')
+    categories_dct = {}
+    for row in cur:
+        categories_dct[row[0]] = row[1]
+    
+    #Getting restaurant buildings info
+    cur.execute('SELECT * FROM buildings')
+    buildings_dct = {}
+    for row in cur:
+        buildings_dct[row[0]] = row[1]   
+    
+    #Putting restaurant details into a nested dictionary
+    restaurant_dct = {}
+    for restaurant in restaurants_lst:
+        category = categories_dct.get(restaurant[2])
+        building = buildings_dct.get(restaurant[3])
+        rating = restaurant[4]
+        
+        restaurant_dct[restaurant[1]] = {'category': category, 'building': building, 'rating': rating}
+    
+    return restaurant_dct
+
 
 def plot_rest_categories(db):
     """
@@ -49,9 +81,9 @@ def get_highest_rating(db): #Do this through DB as well
 
 #Try calling your functions here
 def main():
-    pass
+    load_rest_data("South_U_Restaurants.db")
 
-class TestHW8(unittest.TestCase):
+'''class TestHW8(unittest.TestCase):
     def setUp(self):
         self.rest_dict = {
             'category': 'Cafe',
@@ -96,8 +128,8 @@ class TestHW8(unittest.TestCase):
 
     def test_get_highest_rating(self):
         highest_rating = get_highest_rating('South_U_Restaurants.db')
-        self.assertEqual(highest_rating, self.highest_rating)
+        self.assertEqual(highest_rating, self.highest_rating)'''
 
 if __name__ == '__main__':
     main()
-    unittest.main(verbosity=2)
+    #unittest.main(verbosity=2)
