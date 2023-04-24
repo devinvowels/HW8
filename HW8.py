@@ -173,15 +173,111 @@ def get_highest_rating(db): #Do this through DB as well
     The second bar chart displays the buildings along the y-axis and their ratings along the x-axis 
     in descending order (by rating).
     """
-    pass
+    dir = os.path.dirname(__file__) + os.sep
+    conn = sqlite3.connect(dir + db)
+    cur = conn.cursor()
+
+    #Getting restaurant info
+    cur.execute('SELECT * FROM restaurants')
+    restaurants_lst = []
+    for row in cur:
+        restaurants_lst.append(row)
+
+    #Getting restaurant category info
+    cur.execute('SELECT * FROM categories')
+    categories_dct = {}
+    for row in cur:
+        categories_dct[row[0]] = row[1]
+    
+    #Getting restaurant buildings info
+    cur.execute('SELECT * FROM buildings')
+    buildings_dct = {}
+    for row in cur:
+        buildings_dct[row[0]] = row[1]
+
+
+
+    #Ratings per category
+    avg_category = {}
+    for i in range(1, len(categories_dct) + 1):
+        avg_category[i] = 0
+
+    for r in restaurants_lst:
+        avg_category[r[2]] = avg_category[r[2]] + r[4]
+
+    category_ids = []
+    for x in restaurants_lst:
+        category_ids.append(x[2])
+    
+    for k,v in avg_category.items():
+        count = category_ids.count(k)
+        avg = v/count
+        avg_category.update({k: round(avg, 1)})
+
+    avg_category_final = sorted(avg_category.items(), key=lambda x: x[1], reverse=True)
+    
+    category = []
+    c_rating = []
+    for x in avg_category_final:
+        category.append(x[0])
+        c_rating.append(x[1])
+
+
+
+    #Ratings per building
+    avg_building = {}
+    for i in range(1, len(buildings_dct) + 1):
+        avg_building[i] = 0
+
+    for r in restaurants_lst:
+        avg_building[r[3]] = avg_building[r[3]] + r[4]
+
+    building_ids = []
+    for x in restaurants_lst:
+        building_ids.append(x[3])
+    
+    for k,v in avg_building.items():
+        count = building_ids.count(k)
+        avg = v/count
+        avg_building.update({k: round(avg, 1)})
+   
+    avg_building_final = sorted(avg_building.items(), key=lambda x: x[1], reverse=True)
+    
+    building = []
+    b_rating = []
+    for x in avg_building_final:
+        building.append(x[0])
+        b_rating.append(x[1])
+
+    
+
+    #VISUALIZATIONS
+    fig = plt.figure()
+
+    #Categories
+    ax1 = fig.add_subplot(121)
+    ax1.barh(category, c_rating, label = "Average Restaurant Ratings by Category")
+    ax1.set_title("Average Restaurant Ratings by Category")
+    ax1.set_xlim(0, 5)
+
+    #Buildings
+    ax1 = fig.add_subplot(122)
+    ax1.barh(building, b_rating, label = "Average Restaurant Ratings by Category")
+    ax1.set_title("Average Restaurant Ratings by Category")
+    ax1.set_xlim(0, 5)
+    
+    fig.savefig("Category_Buidling_Ratings.png")
+    plt.show()
+
 
 #Try calling your functions here
 def main():
     load_rest_data("South_U_Restaurants.db")
     plot_rest_categories("South_U_Restaurants.db")
     find_rest_in_building(1140, "South_U_Restaurants.db")
+    get_highest_rating("South_U_Restaurants.db")
 
-'''class TestHW8(unittest.TestCase):
+class TestHW8(unittest.TestCase):
     def setUp(self):
         self.rest_dict = {
             'category': 'Cafe',
@@ -226,8 +322,8 @@ def main():
 
     def test_get_highest_rating(self):
         highest_rating = get_highest_rating('South_U_Restaurants.db')
-        self.assertEqual(highest_rating, self.highest_rating)'''
+        self.assertEqual(highest_rating, self.highest_rating)
 
 if __name__ == '__main__':
     main()
-    #unittest.main(verbosity=2)
+    unittest.main(verbosity=2)
